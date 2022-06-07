@@ -1,0 +1,39 @@
+version: "3.9"
+services:
+  rabbitmq:
+    image: rabbitmq:3.9.1-management
+    restart: unless-stopped
+    container_name: rabbitmq-bus
+    hostname: rabbitmq-bus
+    ports:
+      - 5672:5672   #exchange port
+      - 15672:15672 #web-console
+    networks:
+      bus-net:
+        ipv4_address: 172.40.0.2
+
+  bus:
+    image: openjdk:11
+    container_name: bus
+    restart: unless-stopped
+    ports:
+      - 23080:8080
+    volumes:
+      - ../srv:/opt/srv
+    command: java -jar /opt/srv/bus-0.0.1-SNAPSHOT.jar
+    working_dir: /opt/srv
+    networks:
+      bus-net:
+        ipv4_address: 172.40.0.3
+
+
+networks:
+  bus-net:
+    name: bus-net
+    driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: "false"
+      com.docker.network.bridge.name: bus-net
+    ipam:
+      config:
+        - subnet: 172.40.0.0/16
